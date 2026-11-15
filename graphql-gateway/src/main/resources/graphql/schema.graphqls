@@ -1,0 +1,123 @@
+type Query {
+    books(filter: BookFilterInput, sort: BookSortInput): [Book!]!
+    book(id: ID!): Book
+    authors: [Author!]!
+    categories: [Category!]!
+    me: User
+    myOrders: [Order!]!
+    order(id: ID!): Order
+    reviewsByBook(bookId: ID!): [Review!]!
+    myNotifications: [Notification!]!
+    salesStatistics(from: String!, to: String!): [SalesStatistics!]!
+    popularBooks(limit: Int = 10): [BookStatistics!]!
+    popularAuthors(limit: Int = 10): [AuthorStatistics!]!
+}
+
+type Book {
+    id: ID!
+    title: String!
+    isbn: String!
+    price: Float!
+    stockQuantity: Int!
+    rating: Float
+    author: Author!
+    category: Category!
+}
+
+type Author {
+    id: ID!
+    firstName: String!
+    lastName: String!
+    description: String
+}
+
+type Category {
+    id: ID!
+    name: String!
+    description: String
+}
+
+type User {
+    id: ID!
+    login: String!
+    email: String!
+    role: String!
+    status: String!
+}
+
+type Order {
+    id: ID!
+    clientId: ID!
+    status: String!
+    totalAmount: Float!
+    createdAt: String!
+    items: [OrderItem!]!
+}
+
+type OrderItem {
+    id: ID!
+    bookId: ID!
+    quantity: Int!
+    price: Float!
+}
+
+type Review {
+    id: ID!
+    clientId: ID!
+    bookId: ID!
+    rating: Int!
+    text: String!
+    status: String!
+    createdAt: String!
+}
+
+type Notification {
+    id: ID!
+    userId: ID!
+    type: String!
+    message: String!
+    status: String!
+    createdAt: String!
+}
+
+type SalesStatistics {
+    periodDate: String!
+    totalOrders: Int!
+    totalRevenue: Float!
+}
+
+type BookStatistics {
+    bookId: ID!
+    totalSold: Int!
+    totalRevenue: Float!
+}
+
+type AuthorStatistics {
+    authorId: ID!
+    totalSold: Int!
+    totalRevenue: Float!
+}
+
+input BookFilterInput {
+    title: String
+    authorId: ID
+    categoryId: ID
+    minPrice: Float
+    maxPrice: Float
+}
+
+input BookSortInput {
+    field: BookSortField!
+    direction: SortDirection = ASC
+}
+
+enum BookSortField {
+    TITLE
+    PRICE
+    RATING
+}
+
+enum SortDirection {
+    ASC
+    DESC
+}
