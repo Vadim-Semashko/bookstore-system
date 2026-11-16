@@ -11,6 +11,7 @@ type Query {
     salesStatistics(from: String!, to: String!): [SalesStatistics!]!
     popularBooks(limit: Int = 10): [BookStatistics!]!
     popularAuthors(limit: Int = 10): [AuthorStatistics!]!
+    salesSummary(from: String!, to: String!): SalesSummary!
 }
 
 type Book {
@@ -120,4 +121,76 @@ enum BookSortField {
 enum SortDirection {
     ASC
     DESC
+}
+
+type SalesSummary {
+    totalOrders: Int!
+    totalRevenue: Float!
+    averageOrderValue: Float!
+}
+
+type Mutation {
+    registerUser(input: RegisterUserInput!): User!
+    addBook(input: AddBookInput!): Book!
+    updateBookPrice(bookId: ID!, price: Float!): Book!
+    restockBook(bookId: ID!, quantity: Int!): Book!
+    createOrder(input: CreateOrderInput!): Order!
+    cancelOrder(orderId: ID!): Order!
+    payOrder(orderId: ID!): Payment!
+    addReview(input: AddReviewInput!): Review!
+    moderateReview(reviewId: ID!, decision: ReviewDecision!): Review!
+    createNotification(input: CreateNotificationInput!): Notification!
+    markNotificationRead(notificationId: ID!): Notification!
+}
+
+input RegisterUserInput {
+    login: String!
+    email: String!
+    password: String!
+    firstName: String!
+    lastName: String!
+    phone: String
+}
+
+input AddBookInput {
+    title: String!
+    isbn: String!
+    authorId: ID!
+    categoryId: ID!
+    price: Float!
+    stockQuantity: Int!
+}
+
+input CreateOrderInput {
+    items: [CreateOrderItemInput!]!
+}
+
+input CreateOrderItemInput {
+    bookId: ID!
+    quantity: Int!
+}
+
+type Payment {
+    id: ID!
+    orderId: ID!
+    amount: Float!
+    status: String!
+    paymentDate: String
+}
+
+input AddReviewInput {
+    bookId: ID!
+    rating: Int!
+    text: String!
+}
+
+enum ReviewDecision {
+    APPROVED
+    REJECTED
+}
+
+input CreateNotificationInput {
+    userId: ID!
+    type: String!
+    message: String!
 }

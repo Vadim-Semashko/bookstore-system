@@ -1,5 +1,6 @@
 package com.example.catalog.service;
 
+import com.example.catalog.dto.AddBookRequest;
 import com.example.catalog.dto.AuthorDto;
 import com.example.catalog.dto.BookDto;
 import com.example.catalog.dto.CategoryDto;
@@ -13,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -50,6 +52,72 @@ public class CatalogService {
                 .stream()
                 .map(this::toCategoryDto)
                 .toList();
+    }
+
+    @Transactional
+    public BookDto addBook(AddBookRequest request) {
+
+        if (bookRepository.existsByIsbn(request.isbn())) {
+            throw new IllegalArgumentException("Книга с таким ISBN уже существует");
+        }
+
+        Author author = authorRepository.findById(request.authorId())
+                .orElseThrow(() -> new IllegalArgumentException("Автор не найден"));
+
+        Category category = categoryRepository.findById(request.categoryId())
+                .orElseThrow(() -> new IllegalArgumentException("Категория не найдена"));
+
+        Book book = new Book();
+        book.setTitle(request.title());
+        book.setIsbn(request.isbn());
+        book.setAuthor(author);
+        book.setCategory(category);
+        book.setPrice(request.price());
+        book.setStockQuantity(request.stockQuantity());
+        book.setRating(null);
+
+        return toBookDto(bookRepository.save(book));
+    }
+
+    @Transactional
+    public BookDto updateBookPrice(UUID bookId, BigDecimal newPrice) {
+
+        if (newPrice == null ||
+                newPrice.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException(
+                    "Цена должна быть больше нуля"
+            );
+        }
+
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Книга не найдена"
+                ));
+
+        book.setPrice(newPrice);
+
+        return toBookDto(bookRepository.save(book));
+    }
+
+    @Transactional
+    public BookDto restockBook(UUID bookId, Integer quantity) {
+
+        if (quantity == null || quantity <= 0) {
+            throw new IllegalArgumentException(
+                    "Количество должно быть больше нуля"
+            );
+        }
+
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Книга не найдена"
+                ));
+
+        book.setStockQuantity(
+                Math.addExact(book.getStockQuantity(), quantity)
+        );
+
+        return toBookDto(bookRepository.save(book));
     }
 
     private BookDto toBookDto(Book book) {

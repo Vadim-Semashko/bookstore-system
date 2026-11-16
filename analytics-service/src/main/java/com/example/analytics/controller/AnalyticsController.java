@@ -3,6 +3,7 @@ package com.example.analytics.controller;
 import com.example.analytics.dto.AuthorStatisticsDto;
 import com.example.analytics.dto.BookStatisticsDto;
 import com.example.analytics.dto.SalesStatisticsDto;
+import com.example.analytics.dto.SalesSummaryDto;
 import com.example.analytics.service.AnalyticsService;
 
 import lombok.RequiredArgsConstructor;
@@ -48,4 +49,13 @@ public class AnalyticsController {
     ) {
         return analyticsService.getPopularAuthors(limit);
     }
+
+    @GetMapping("/summary")
+    public SalesSummaryDto getSalesSummary(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to
+    ) {
+        return analyticsService.getSalesSummary(from, to);
+    }
+
 }

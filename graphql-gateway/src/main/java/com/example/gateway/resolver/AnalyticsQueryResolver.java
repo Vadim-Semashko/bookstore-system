@@ -4,6 +4,7 @@ import com.example.gateway.client.MockAnalyticsClient;
 import com.example.gateway.dto.AuthorStatisticsDto;
 import com.example.gateway.dto.BookStatisticsDto;
 import com.example.gateway.dto.SalesStatisticsDto;
+import com.example.gateway.dto.SalesSummaryDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -52,6 +53,11 @@ public class AnalyticsQueryResolver {
         }
 
         return analyticsClient.getPopularAuthors(actualLimit);
+    }
+
+    @QueryMapping
+    public SalesSummaryDto salesSummary(@Argument String from, @Argument String to) {
+        return analyticsClient.getSalesSummary(LocalDate.parse(from), LocalDate.parse(to));
     }
 
 }

@@ -3,6 +3,7 @@ package com.example.gateway.client;
 import com.example.gateway.dto.AuthorStatisticsDto;
 import com.example.gateway.dto.BookStatisticsDto;
 import com.example.gateway.dto.SalesStatisticsDto;
+import com.example.gateway.dto.SalesSummaryDto;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -49,4 +50,31 @@ public class MockAnalyticsClient {
                 .limit(Math.max(0, limit))
                 .toList();
     }
+
+    public SalesSummaryDto getSalesSummary(LocalDate from, LocalDate to) {
+        if (from == null || to == null || from.isAfter(to)) {
+            throw new IllegalArgumentException("Некорректный период статистики");
+        }
+
+        var filtered = getSalesStatistics(from, to);
+
+        int totalOrders = filtered.stream()
+                .mapToInt(SalesStatisticsDto::totalOrders)
+                .sum();
+
+        double totalRevenue = filtered.stream()
+                .mapToDouble(SalesStatisticsDto::totalRevenue)
+                .sum();
+
+        double averageOrderValue = totalOrders == 0
+                ? 0.0
+                : Math.round(totalRevenue / totalOrders * 100.0) / 100.0;
+
+        return new SalesSummaryDto(
+                totalOrders,
+                totalRevenue,
+                averageOrderValue
+        );
+    }
+
 }

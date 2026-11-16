@@ -4,6 +4,8 @@ import com.example.analytics.dto.AuthorStatisticsDto;
 import com.example.analytics.dto.BookStatisticsDto;
 import com.example.analytics.dto.SalesStatisticsDto;
 
+import com.example.analytics.dto.SalesSummaryDto;
+import com.example.analytics.entity.SalesStatistics;
 import com.example.analytics.repository.AuthorStatisticsRepository;
 import com.example.analytics.repository.BookStatisticsRepository;
 import com.example.analytics.repository.SalesStatisticsRepository;
@@ -11,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -60,4 +64,35 @@ public class AnalyticsService {
                 ))
                 .toList();
     }
+
+    public SalesSummaryDto getSalesSummary(LocalDate from, LocalDate to) {
+        if (from == null || to == null || from.isAfter(to)) {
+            throw new IllegalArgumentException("Некорректный период статистики");
+        }
+
+        var statistics = salesRepository.findByPeriodDateBetweenOrderByPeriodDateAsc(from, to);
+
+        long totalOrders = statistics.stream()
+                .mapToLong(SalesStatistics::getTotalOrders)
+                .sum();
+
+        BigDecimal totalRevenue = statistics.stream()
+                .map(SalesStatistics::getTotalRevenue)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal averageOrderValue = totalOrders == 0
+                ? BigDecimal.ZERO.setScale(2)
+                : totalRevenue.divide(
+                BigDecimal.valueOf(totalOrders),
+                2,
+                RoundingMode.HALF_UP
+        );
+
+        return new SalesSummaryDto(
+                totalOrders,
+                totalRevenue,
+                averageOrderValue
+        );
+    }
+
 }
